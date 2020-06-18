@@ -1,0 +1,11 @@
+[package]
+name = "c6502"
+version = "0.1.0"
+authors = ["Max Roncace"]
+description = "6502 emulator written in Rust"
+edition = "2018"
+readme = "README.md"
+
+[lib]
+name = "c6502"
+crate-type = ["staticlib"]
