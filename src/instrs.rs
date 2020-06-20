@@ -111,54 +111,42 @@ static INSTR_LIST: [Instr; 256] = {
     ]
 };
 
-pub fn get_instr_type(mnemonic: &Mnemonic) -> InstrType {
-    use Mnemonic::*;
-    match mnemonic {
-        LDA | LDX | LDY | ADC | SBC | AND | BIT | EOR |
-        ORA | CMP | CPX | CPY | NOP | LAX | ANC | ALR |
-        XAA | ARR | LAS => InstrType::Read,
-        STA | STX | STY | SAX | AXS => InstrType::Write,
-        DEC | INC | ASL | LSR | ROL | ROR | SLO | DCP |
-        ISC | RLA | SRE | RRA | SAY | XAS | AXA => InstrType::ReadWrite,
-        BCC | BCS | BNE | BEQ | BPL | BMI | BVC | BVS => InstrType::Branch,
-        JMP | JSR => InstrType::Jump,
-        PHA | PLA | PHP | PLP => InstrType::Stack,
-        TAX | TAY | TXA | TYA | INX | INY | DEX | DEY |
-        TSX | TXS | CLC | SEC | CLI | SEI | CLV | CLD |
-        SED | TAS => InstrType::Register,
-        RTS | RTI => InstrType::Return,
-        BRK | KIL => InstrType::Other
-    }
-}
-
-pub fn get_instr_len(instr: &Instr) -> u8 {
-    if instr.mnemonic == Mnemonic::BRK {
-        2
-    } else {
-        match instr.addr_mode {
-            AddrMode::IMP => 1,
-            AddrMode::ABS | AddrMode::ABX | AddrMode::ABY | AddrMode::IND => 3,
-            _ => 2
+impl Mnemonic {
+    pub fn get_type(&self) -> InstrType {
+        use Mnemonic::*;
+        match self {
+            LDA | LDX | LDY | ADC | SBC | AND | BIT | EOR |
+            ORA | CMP | CPX | CPY | NOP | LAX | ANC | ALR |
+            XAA | ARR | LAS => InstrType::Read,
+            STA | STX | STY | SAX | AXS => InstrType::Write,
+            DEC | INC | ASL | LSR | ROL | ROR | SLO | DCP |
+            ISC | RLA | SRE | RRA | SAY | XAS | AXA => InstrType::ReadWrite,
+            BCC | BCS | BNE | BEQ | BPL | BMI | BVC | BVS => InstrType::Branch,
+            JMP | JSR => InstrType::Jump,
+            PHA | PLA | PHP | PLP => InstrType::Stack,
+            TAX | TAY | TXA | TYA | INX | INY | DEX | DEY |
+            TSX | TXS | CLC | SEC | CLI | SEI | CLV | CLD |
+            SED | TAS => InstrType::Register,
+            RTS | RTI => InstrType::Return,
+            BRK | KIL => InstrType::Other
         }
     }
 }
 
-pub fn decode_instr(opcode: u8) -> Instr {
-    INSTR_LIST[opcode as usize]
-}
+impl Instr {
+    pub fn decode(opcode: u8) -> &'static Instr {
+        &INSTR_LIST[opcode as usize]
+    }
 
-pub fn can_incur_page_boundary_penalty(opcode: u8) -> bool {
-    match (opcode >> 4) & 1 {
-        // all opcodes with an even high nybble don't incur penalties
-        0 => true,
-        _ => match opcode & 0xF {
-            // for all opcodes 0x9X, only 0x90 incurs a penalty
-            0x0 if (opcode >> 4) == 0x9 => true,
-            // row 0xBX is unusual - I can't find a pattern in it
-            0x3 | 0xB | 0xE | 0xF if (opcode >> 4) == 0xB => true,
-            // for all other rows, these columns exclusively incur the penalty
-            0x0 | 0x1 | 0x9 | 0xC | 0xD => true,
-            _ => false
+    pub fn get_instr_len(instr: &Instr) -> u8 {
+        if instr.mnemonic == Mnemonic::BRK {
+            2
+        } else {
+            match instr.addr_mode {
+                AddrMode::IMP => 1,
+                AddrMode::ABS | AddrMode::ABX | AddrMode::ABY | AddrMode::IND => 3,
+                _ => 2
+            }
         }
     }
 }
