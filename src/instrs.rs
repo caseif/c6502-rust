@@ -138,11 +138,11 @@ impl Instr {
         &INSTR_LIST[opcode as usize]
     }
 
-    pub fn get_instr_len(instr: &Instr) -> u8 {
-        if instr.mnemonic == Mnemonic::BRK {
+    pub fn cycle_count(&self) -> u8 {
+        if self.mnemonic == Mnemonic::BRK {
             2
         } else {
-            match instr.addr_mode {
+            match self.addr_mode {
                 AddrMode::IMP => 1,
                 AddrMode::ABS | AddrMode::ABX | AddrMode::ABY | AddrMode::IND => 3,
                 _ => 2

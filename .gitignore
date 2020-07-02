@@ -1,5 +1,5 @@
 *.bin
-!test/res/*.bin
+!res/tests/*.bin
 
 .vs/
 .vscode/

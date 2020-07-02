@@ -29,12 +29,12 @@ pub trait StatusBitfield {
 
 impl StatusBitfield for StatusReg {
     fn get_bit(&self, bit: StatusBit) -> bool {
-        assert!((0..7).contains(&(bit as u8)));
+        assert!((0..=7).contains(&(bit as u8)));
         ((self >> (bit as u8)) & 1) == 1
     }
     
     fn set_bit(&mut self, bit: StatusBit, val: bool) -> () {
-        assert!((0..7).contains(&(bit as u8)));
+        assert!((0..=7).contains(&(bit as u8)));
         if val {
             *self |= 1 << (bit as u8);
         } else {
@@ -116,7 +116,8 @@ pub struct Cpu {
     cur_int: Option<&'static InterruptType>,
     queued_int: Option<&'static InterruptType>,
     nmi_hijack: bool,
-    regs_snapshot: CpuRegs
+    regs_snapshot: CpuRegs,
+    log_callback: Option<fn (&str) -> ()>
 }
 
 impl Default for Cpu {
@@ -127,7 +128,7 @@ impl Default for Cpu {
             irq_line_rdr: Default::default(),
             rst_line_rdr: Default::default(),
             nmi_line_last: Default::default(),
-            instr_cycle: Default::default(),
+            instr_cycle: 1,  // this is 1-indexed to match blargg's doc
             cur_instr: Default::default(),
             last_opcode: Default::default(),
             cur_operand: Default::default(),
@@ -136,6 +137,7 @@ impl Default for Cpu {
             queued_int: Default::default(),
             nmi_hijack: Default::default(),
             regs_snapshot: Default::default(),
+            log_callback: Default::default(),
         }
     }
 }
@@ -152,6 +154,10 @@ impl Cpu {
         return cpu;
     }
 
+    pub fn set_log_callback(&mut self, callback: Option<fn (&str) -> ()>) -> () {
+        self.log_callback = callback;
+    }
+
     // core logic
 
     fn set_alu_flags(&mut self, val: u8) -> () {
@@ -163,16 +169,19 @@ impl Cpu {
         let mut res: u8 = bus.read();
         if right {
             res >>= 1;
+            
             if rot {
                 res |= (self.regs.status.get_bit(StatusBit::Carry) as u8) << 7;
             }
 
-            self.regs.status.set_bit(StatusBit::Carry, bus.read() != 0);
+            self.regs.status.set_bit(StatusBit::Carry, bus.read() & 0x01 != 0);
         } else {
             res <<= 1;
+            
             if rot {
                 res |= self.regs.status.get_bit(StatusBit::Carry) as u8;
             }
+            
             self.regs.status.set_bit(StatusBit::Carry, (bus.read() & 0x80) >> 7 != 0);
         }
 
@@ -196,7 +205,7 @@ impl Cpu {
 
         // unsigned overflow will occur if at least two among the most
         // significant operand bits and the carry bit are set
-        self.regs.status.set_bit(StatusBit::Carry, (((acc0 + m + self.regs.status.get_bit(StatusBit::Carry) as u8) as u16) & 0x100) != 0);
+        self.regs.status.set_bit(StatusBit::Carry, ((acc0 as u16 + m as u16 + self.regs.status.get_bit(StatusBit::Carry) as u16) & 0x100) != 0);
         // signed overflow will occur if the sign of both inputs is
         // different from the sign of the result
         self.regs.status.set_bit(StatusBit::Overflow, ((acc0 ^ self.regs.acc) & (m ^ self.regs.acc) & 0x80) != 0);
@@ -477,7 +486,8 @@ impl Cpu {
     // helper functions
 
     fn assert_cycle(&self, min: u8, max: u8) {
-        assert!(self.instr_cycle >= min && self.instr_cycle <= max);
+        assert!(self.instr_cycle >= min && self.instr_cycle <= max, "Unexpected cycle {} (expected range [{}, {}])",
+            self.instr_cycle, min, max);
     }
 
     fn stack_read(&self, mem: &mut impl SysMemIface) -> u8 {
@@ -792,6 +802,7 @@ impl Cpu {
                     }
                     1 => {
                         mem.write(self.eff_operand, bus.read());
+                        self.do_instr_operation(bus);
                     }
                     2 => {
                         mem.write(self.eff_operand, bus.read());
@@ -1057,7 +1068,7 @@ impl Cpu {
         if self.cur_int.is_some() {
             self.exec_interrupt(mem);
         } else if self.instr_cycle == 1 {
-            //TODO: deal with logging
+            self.print_cur_instr(bus);
 
             if self.queued_int.is_some() {
                 self.cur_instr = None;
@@ -1079,7 +1090,7 @@ impl Cpu {
             self.exec_interrupt(mem);
             return;
         } else if self.instr_cycle == 2 && self.cur_instr.unwrap().addr_mode != AddrMode::IMP
-                && self.cur_instr.unwrap().addr_mode == AddrMode::IMM {
+                && self.cur_instr.unwrap().addr_mode != AddrMode::IMM {
             // special case
             if self.cur_instr.unwrap().addr_mode == AddrMode::REL {
                 self.poll_interrupts();
@@ -1168,7 +1179,7 @@ impl Cpu {
         }
     }
 
-    pub fn cycle(&mut self, mem: &mut impl SysMemIface, bus: &mut impl SysBusIface, int_lines: impl SysIntLinesIface) -> () {
+    pub fn cycle(&mut self, mem: &mut impl SysMemIface, bus: &mut impl SysBusIface, int_lines: &impl SysIntLinesIface) -> () {
         self.do_instr_cycle(mem, bus);
 
         if self.queued_int.is_none() && self.instr_cycle == 0
@@ -1176,9 +1187,70 @@ impl Cpu {
             self.poll_interrupts();
         }
 
-        self.read_interrupt_lines(&int_lines);
+        self.read_interrupt_lines(int_lines);
 
         self.instr_cycle += 1;
+    }
+
+    fn print_cur_instr(&self, bus: &impl SysBusIface) -> () {
+        if self.log_callback.is_none() || self.cur_instr.is_none() {
+            return;
+        }
+
+        let str_machine_code = match self.cur_instr.unwrap().cycle_count() {
+            1 => format!("{:02X}      ", self.last_opcode),
+            2 => format!("{:02X} {:02X}   ", self.last_opcode, self.cur_operand & 0xFF),
+            3 => format!("{:02X} {:02X} {:02X}", self.last_opcode, self.cur_operand & 0xFF, self.cur_operand >> 8),
+            _ => panic!("Unexpected cycle count {}", self.cur_instr.unwrap().cycle_count())
+        };
+    
+        let instr_type = self.cur_instr.as_ref().unwrap().mnemonic.get_type();
+        let str_param = match self.cur_instr.as_ref().unwrap().addr_mode {
+            AddrMode::IMM => format!("#${:02X}                   ", self.cur_operand & 0xFF),
+            AddrMode::ZRP => match instr_type {
+                InstrType::Read | InstrType::ReadWrite => format!("${:02X}              -> ${:02X}",
+                    self.cur_operand & 0xFF, bus.read()),
+                _ => format!("${:02X}              <- ${:02X}",
+                    self.cur_operand & 0xFF, bus.read())
+            }
+            AddrMode::ZPX | AddrMode::ZPY => match instr_type {
+                InstrType::Read => format!("${:02X},{}   -> ${:04X} -> ${:02X}",
+                    self.cur_operand & 0xFF,
+                    if self.cur_instr.unwrap().addr_mode == AddrMode::ZPX { "X" } else { "Y" },
+                    self.eff_operand,
+                    bus.read()),
+                _ => format!("${:02X},{}   -> ${:04X} <- ${:02X}",
+                    self.cur_operand & 0xFF,
+                    if self.cur_instr.unwrap().addr_mode == AddrMode::ZPX { "X" } else { "Y" },
+                    self.eff_operand,
+                    bus.read())
+            }
+            AddrMode::ABS => match instr_type {
+                InstrType::Read => format!("${:04X}            -> ${:02X}", self.cur_operand, bus.read()),
+                _ => format!("${:04X}            <- ${:02X}", self.cur_operand, bus.read())
+            }
+            AddrMode::ABX | AddrMode::ABY => match instr_type {
+                InstrType::Read => format!("${:04X},{} -> ${:04X} -> ${:02X}",
+                    self.cur_operand,
+                    if self.cur_instr.unwrap().addr_mode == AddrMode::ABX { "X" } else { "Y" },
+                    self.eff_operand,
+                    bus.read()),
+                _ => format!("${:04X},{} -> ${:04X} <- ${:02X}",
+                    self.cur_operand,
+                    if self.cur_instr.unwrap().addr_mode == AddrMode::ABX { "X" } else { "Y" },
+                    self.eff_operand,
+                    bus.read())
+            }
+            AddrMode::REL => format!("#${:02X}    -> ${:04X}       ", self.cur_operand & 0xFF, self.eff_operand),
+            AddrMode::IND => format!("(${:04X}) -> ${:04X}       ", self.cur_operand, self.eff_operand),
+            AddrMode::IZX => format!("(${:02X},X) -> ${:04X} -> ${:02X}", self.cur_operand & 0xFF, self.eff_operand,
+                    bus.read()),
+            AddrMode::IZY => format!("(${:02X}),Y -> ${:04X} -> ${:02X}", self.cur_operand & 0xFF, self.eff_operand,
+                    bus.read()),
+            AddrMode::IMP => format!("                       ")
+        };
+    
+        (self.log_callback.unwrap())(&format!("{}  {:?} {}", str_machine_code, self.cur_instr.unwrap().mnemonic, str_param)[..]);
     }
 }
 
