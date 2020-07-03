@@ -8,4 +8,4 @@ readme = "README.md"
 
 [lib]
 name = "c6502"
-crate-type = ["staticlib"]
+crate-type = ["rlib"]
