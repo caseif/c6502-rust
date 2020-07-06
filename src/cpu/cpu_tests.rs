@@ -23,7 +23,7 @@ struct TestSystem {
 }
 
 impl cpu::SysMemIface for SysRam {
-    fn read(&self, addr: u16) -> u8 {
+    fn read(&mut self, addr: u16) -> u8 {
         match addr {
             0x0000..=0x1FFF => self.ram[(addr as usize % self.ram.len())],
             0x8000..=0xFFFF => {
@@ -139,7 +139,7 @@ impl TestSystem {
         }
     }
 
-    fn run_tests(&mut self, assert_sets: &[&[(u8, fn(sys: &TestSystem) -> u8)]]) {
+    fn run_tests(&mut self, assert_sets: &[&[(u8, fn(sys: &mut TestSystem) -> u8)]]) {
         let mut i = 0;
         for set in assert_sets.iter() {
             self.pump_cpu();
@@ -162,53 +162,53 @@ fn test_addition() -> () {
     let mut sys = TestSystem::new("./res/tests/addition.bin");
     sys.run_tests(&[
         &[
-            (0x02, |sys: &TestSystem| sys.cpu.regs.acc),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Overflow) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0x02, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Overflow) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
         ],
         &[
-            (0x01, |sys: &TestSystem| sys.cpu.regs.acc),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Overflow) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0x01, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Overflow) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
         ],
         &[
-            (0x80, |sys: &TestSystem| sys.cpu.regs.acc),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Overflow) as u8),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0x80, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Overflow) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
         ],
         &[
-            (0x00, |sys: &TestSystem| sys.cpu.regs.acc),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Overflow) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0x00, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Overflow) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
         ],
         &[
-            (0x02, |sys: &TestSystem| sys.cpu.regs.acc),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Overflow) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0x02, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Overflow) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
         ],
         &[
-            (0x80, |sys: &TestSystem| sys.cpu.regs.acc),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Overflow) as u8),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0x80, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Overflow) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
         ],
         &[
-            (0x00, |sys: &TestSystem| sys.cpu.regs.acc),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Overflow) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0x00, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Overflow) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
         ]
     ]);
 }
@@ -219,129 +219,129 @@ fn test_arithmetic() -> () {
     sys.run_tests(&[
         // test INX
         &[
-            (0x01, |sys: &TestSystem| sys.cpu.regs.x),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0x01, |sys: &mut TestSystem| sys.cpu.regs.x),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (0x00, |sys: &TestSystem| sys.cpu.regs.x),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0x00, |sys: &mut TestSystem| sys.cpu.regs.x),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (0x80, |sys: &TestSystem| sys.cpu.regs.x),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0x80, |sys: &mut TestSystem| sys.cpu.regs.x),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (0x81, |sys: &TestSystem| sys.cpu.regs.x),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0x81, |sys: &mut TestSystem| sys.cpu.regs.x),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         // test INY
         &[
-            (0x01, |sys: &TestSystem| sys.cpu.regs.y),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0x01, |sys: &mut TestSystem| sys.cpu.regs.y),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (0x00, |sys: &TestSystem| sys.cpu.regs.y),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0x00, |sys: &mut TestSystem| sys.cpu.regs.y),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (0x80, |sys: &TestSystem| sys.cpu.regs.y),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0x80, |sys: &mut TestSystem| sys.cpu.regs.y),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (0x81, |sys: &TestSystem| sys.cpu.regs.y),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0x81, |sys: &mut TestSystem| sys.cpu.regs.y),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         // test INC
         &[
-            (0x01, |sys: &TestSystem| sys.cpu.regs.acc),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0x01, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (0x00, |sys: &TestSystem| sys.cpu.regs.acc),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0x00, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (0x80, |sys: &TestSystem| sys.cpu.regs.acc),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0x80, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (0x81, |sys: &TestSystem| sys.cpu.regs.acc),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0x81, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         // test DEX
         &[
-            (0x01, |sys: &TestSystem| sys.cpu.regs.x),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0x01, |sys: &mut TestSystem| sys.cpu.regs.x),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (0x00, |sys: &TestSystem| sys.cpu.regs.x),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0x00, |sys: &mut TestSystem| sys.cpu.regs.x),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (0xFF, |sys: &TestSystem| sys.cpu.regs.x),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0xFF, |sys: &mut TestSystem| sys.cpu.regs.x),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (0x7F, |sys: &TestSystem| sys.cpu.regs.x),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0x7F, |sys: &mut TestSystem| sys.cpu.regs.x),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         // test DEY
         &[
-            (0x01, |sys: &TestSystem| sys.cpu.regs.y),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0x01, |sys: &mut TestSystem| sys.cpu.regs.y),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (0x00, |sys: &TestSystem| sys.cpu.regs.y),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0x00, |sys: &mut TestSystem| sys.cpu.regs.y),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (0xFF, |sys: &TestSystem| sys.cpu.regs.y),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0xFF, |sys: &mut TestSystem| sys.cpu.regs.y),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (0x7F, |sys: &TestSystem| sys.cpu.regs.y),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0x7F, |sys: &mut TestSystem| sys.cpu.regs.y),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         // test DEC
         &[
-            (0x01, |sys: &TestSystem| sys.cpu.regs.acc),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0x01, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (0x00, |sys: &TestSystem| sys.cpu.regs.acc),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0x00, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (0xFF, |sys: &TestSystem| sys.cpu.regs.acc),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0xFF, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (0x7F, |sys: &TestSystem| sys.cpu.regs.acc),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0x7F, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
     ]);
 }
@@ -352,40 +352,40 @@ fn test_branch() -> () {
     sys.run_tests(&[
         // test JMP (indirect)
         &[
-            (0x00, |sys: &TestSystem| sys.cpu.regs.x),
+            (0x00, |sys: &mut TestSystem| sys.cpu.regs.x),
         ],
         // test JMP (indirect)
         &[
-            (0x02, |sys: &TestSystem| sys.cpu.regs.x),
+            (0x02, |sys: &mut TestSystem| sys.cpu.regs.x),
         ],
         // test JMP
         &[
-            (0x01, |sys: &TestSystem| sys.cpu.regs.acc),
-            (0x00, |sys: &TestSystem| sys.cpu.regs.x),
+            (0x01, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (0x00, |sys: &mut TestSystem| sys.cpu.regs.x),
         ],
         // test JSR
         &[
-            (0x07, |sys: &TestSystem| sys.cpu.regs.x),
+            (0x07, |sys: &mut TestSystem| sys.cpu.regs.x),
         ],
         // test BEQ, BNE
         &[
-            (0x01, |sys: &TestSystem| sys.cpu.regs.x),
-            (0x02, |sys: &TestSystem| sys.cpu.regs.y),
+            (0x01, |sys: &mut TestSystem| sys.cpu.regs.x),
+            (0x02, |sys: &mut TestSystem| sys.cpu.regs.y),
         ],
         // test BCS, BCC
         &[
-            (0x01, |sys: &TestSystem| sys.cpu.regs.x),
-            (0x02, |sys: &TestSystem| sys.cpu.regs.y),
+            (0x01, |sys: &mut TestSystem| sys.cpu.regs.x),
+            (0x02, |sys: &mut TestSystem| sys.cpu.regs.y),
         ],
         // test BPL, BMI
         &[
-            (0x01, |sys: &TestSystem| sys.cpu.regs.x),
-            (0x02, |sys: &TestSystem| sys.cpu.regs.y),
+            (0x01, |sys: &mut TestSystem| sys.cpu.regs.x),
+            (0x02, |sys: &mut TestSystem| sys.cpu.regs.y),
         ],
         // test BVS, BVC
         &[
-            (0x01, |sys: &TestSystem| sys.cpu.regs.x),
-            (0x02, |sys: &TestSystem| sys.cpu.regs.y),
+            (0x01, |sys: &mut TestSystem| sys.cpu.regs.x),
+            (0x02, |sys: &mut TestSystem| sys.cpu.regs.y),
         ],
     ]);
 }
@@ -395,10 +395,10 @@ fn test_interrupt() -> () {
     let mut sys = TestSystem::new("./res/tests/interrupt.bin");
     sys.run_tests(&[
         &[
-            (0x01, |sys: &TestSystem| sys.cpu.regs.acc),
-            (0x01, |sys: &TestSystem| sys.cpu.regs.x),
-            (0x01, |sys: &TestSystem| sys.cpu.regs.y),
-            (0x01, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (0x01, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (0x01, |sys: &mut TestSystem| sys.cpu.regs.x),
+            (0x01, |sys: &mut TestSystem| sys.cpu.regs.y),
+            (0x01, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
         ],
     ]);
 }
@@ -409,170 +409,170 @@ fn test_logic() -> () {
     sys.run_tests(&[
         // test AND
         &[
-            (12, |sys: &TestSystem| sys.cpu.regs.acc),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (12, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (0x80, |sys: &TestSystem| sys.cpu.regs.acc),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0x80, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (0, |sys: &TestSystem| sys.cpu.regs.acc),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         // test EOR
         &[
-            (12, |sys: &TestSystem| sys.cpu.regs.acc),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (12, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (0xCC, |sys: &TestSystem| sys.cpu.regs.acc),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0xCC, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (0, |sys: &TestSystem| sys.cpu.regs.acc),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         // test ORA
         &[
-            (0x3F, |sys: &TestSystem| sys.cpu.regs.acc),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0x3F, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (0xFF, |sys: &TestSystem| sys.cpu.regs.acc),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0xFF, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (0, |sys: &TestSystem| sys.cpu.regs.acc),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         // test ASL
         &[
-            (14, |sys: &TestSystem| sys.cpu.regs.acc),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (14, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (0xFE, |sys: &TestSystem| sys.cpu.regs.acc),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0xFE, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (2, |sys: &TestSystem| sys.cpu.regs.acc),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (2, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (0, |sys: &TestSystem| sys.cpu.regs.acc),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         // test ASL (memory)
         &[
-            (14, |sys: &TestSystem| sys.cpu.regs.acc),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (14, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (0xFE, |sys: &TestSystem| sys.cpu.regs.acc),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0xFE, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (0, |sys: &TestSystem| sys.cpu.regs.acc),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         // test LSR
         &[
-            (3, |sys: &TestSystem| sys.cpu.regs.acc),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (3, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (3, |sys: &TestSystem| sys.cpu.regs.acc),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (3, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (0, |sys: &TestSystem| sys.cpu.regs.acc),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         // test ROL
         &[
-            (14, |sys: &TestSystem| sys.cpu.regs.acc),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (14, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (15, |sys: &TestSystem| sys.cpu.regs.acc),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (15, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (0xFF, |sys: &TestSystem| sys.cpu.regs.acc),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0xFF, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (3, |sys: &TestSystem| sys.cpu.regs.acc),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (3, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (0, |sys: &TestSystem| sys.cpu.regs.acc),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         // test LSR
         &[
-            (3, |sys: &TestSystem| sys.cpu.regs.acc),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (3, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (0x83, |sys: &TestSystem| sys.cpu.regs.acc),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0x83, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (0x83, |sys: &TestSystem| sys.cpu.regs.acc),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0x83, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (0, |sys: &TestSystem| sys.cpu.regs.acc),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
     ]);
 }
@@ -582,22 +582,22 @@ fn test_stack() -> () {
     let mut sys = TestSystem::new("./res/tests/stack.bin");
     sys.run_tests(&[
         &[
-            (0x01, |sys: &TestSystem| sys.cpu.regs.acc),
-            (0xFD, |sys: &TestSystem| sys.cpu.regs.x),
-            (0x02, |sys: &TestSystem| sys.cpu.regs.y),
-            (0xFF, |sys: &TestSystem| sys.cpu.regs.sp),
+            (0x01, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (0xFD, |sys: &mut TestSystem| sys.cpu.regs.x),
+            (0x02, |sys: &mut TestSystem| sys.cpu.regs.y),
+            (0xFF, |sys: &mut TestSystem| sys.cpu.regs.sp),
         ],
         &[
-            (0x01, |sys: &TestSystem| sys.cpu.regs.acc),
-            (0x00, |sys: &TestSystem| sys.cpu.regs.x),
-            (0x02, |sys: &TestSystem| sys.cpu.regs.y),
-            (0xFF, |sys: &TestSystem| sys.cpu.regs.sp),
+            (0x01, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (0x00, |sys: &mut TestSystem| sys.cpu.regs.x),
+            (0x02, |sys: &mut TestSystem| sys.cpu.regs.y),
+            (0xFF, |sys: &mut TestSystem| sys.cpu.regs.sp),
         ],
         &[
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::InterruptDisable) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::InterruptDisable) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
         ],
     ]);
 }
@@ -608,66 +608,66 @@ fn test_status() -> () {
     sys.run_tests(&[
                 // test explicit flag-setting
         &[
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::InterruptDisable) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::InterruptDisable) as u8),
         ],
         // test explicit flag-clearing
         &[
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::InterruptDisable) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Overflow) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::InterruptDisable) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Overflow) as u8),
         ],
         // test comparison instructions
         // test CMP
         // a = v
         &[
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         // a > v
         &[
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         // a < v
         &[
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         // a > v && a is neg && v is neg
         &[
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         // a > v && a is neg && v is pos
         &[
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         // a < v && a is neg && v is neg
         &[
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         // test CPX
         // x == v
         &[
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         // test CPY
         // y == v
         &[
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
     ]);
 }
@@ -679,85 +679,85 @@ fn test_store_load() -> () {
         // ACCUMULATOR TESTS
         // test zero-page addressing
         &[
-            (1, |sys: &TestSystem| sys.sys_ram.read(0x10)),
-            (1, |sys: &TestSystem| sys.sys_ram.read(0x90)),
-            (1, |sys: &TestSystem| sys.sys_ram.read(0xFF)),
+            (1, |sys: &mut TestSystem| sys.sys_ram.read(0x10)),
+            (1, |sys: &mut TestSystem| sys.sys_ram.read(0x90)),
+            (1, |sys: &mut TestSystem| sys.sys_ram.read(0xFF)),
         ],
         // test zero-page loading
         &[
-            (1, |sys: &TestSystem| sys.cpu.regs.acc),
-            (1, |sys: &TestSystem| sys.cpu.regs.x),
-            (1, |sys: &TestSystem| sys.cpu.regs.y),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.x),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.y),
         ],
         // test zero-page (x-indexed) addressing
         &[
-            (1, |sys: &TestSystem| sys.sys_ram.read(0x12)),
-            (1, |sys: &TestSystem| sys.sys_ram.read(0x92)),
-            (1, |sys: &TestSystem| sys.sys_ram.read(0x01)),
-            (1, |sys: &TestSystem| sys.sys_ram.read(0xA1)),
-            (1, |sys: &TestSystem| sys.sys_ram.read(0x02)),
-            (1, |sys: &TestSystem| sys.sys_ram.read(0x11)),
+            (1, |sys: &mut TestSystem| sys.sys_ram.read(0x12)),
+            (1, |sys: &mut TestSystem| sys.sys_ram.read(0x92)),
+            (1, |sys: &mut TestSystem| sys.sys_ram.read(0x01)),
+            (1, |sys: &mut TestSystem| sys.sys_ram.read(0xA1)),
+            (1, |sys: &mut TestSystem| sys.sys_ram.read(0x02)),
+            (1, |sys: &mut TestSystem| sys.sys_ram.read(0x11)),
         ],
         // test absolute addressing
         &[
-            (1, |sys: &TestSystem| sys.sys_ram.read(0x0023)),
-            (1, |sys: &TestSystem| sys.sys_ram.read(0x0303)),
-            (1, |sys: &TestSystem| sys.sys_ram.read(0x0103)),
-            (1, |sys: &TestSystem| sys.sys_ram.read(0x0203)),
-            (1, |sys: &TestSystem| sys.sys_ram.read(0x0303)),
+            (1, |sys: &mut TestSystem| sys.sys_ram.read(0x0023)),
+            (1, |sys: &mut TestSystem| sys.sys_ram.read(0x0303)),
+            (1, |sys: &mut TestSystem| sys.sys_ram.read(0x0103)),
+            (1, |sys: &mut TestSystem| sys.sys_ram.read(0x0203)),
+            (1, |sys: &mut TestSystem| sys.sys_ram.read(0x0303)),
         ],
         // test absolute (x-indexed) addressing
         &[
-            (1, |sys: &TestSystem| sys.sys_ram.read(0x0025)),
-            (1, |sys: &TestSystem| sys.sys_ram.read(0x0305)),
-            (1, |sys: &TestSystem| sys.sys_ram.read(0x0105)),
-            (1, |sys: &TestSystem| sys.sys_ram.read(0x0205)),
-            (1, |sys: &TestSystem| sys.sys_ram.read(0x0305)),
-            (1, |sys: &TestSystem| sys.sys_ram.read(0x0005)),
+            (1, |sys: &mut TestSystem| sys.sys_ram.read(0x0025)),
+            (1, |sys: &mut TestSystem| sys.sys_ram.read(0x0305)),
+            (1, |sys: &mut TestSystem| sys.sys_ram.read(0x0105)),
+            (1, |sys: &mut TestSystem| sys.sys_ram.read(0x0205)),
+            (1, |sys: &mut TestSystem| sys.sys_ram.read(0x0305)),
+            (1, |sys: &mut TestSystem| sys.sys_ram.read(0x0005)),
         ],
         // test absolute (y-indexed) addressing
         &[
-            (1, |sys: &TestSystem| sys.sys_ram.read(0x0026)),
-            (1, |sys: &TestSystem| sys.sys_ram.read(0x0006)),
+            (1, |sys: &mut TestSystem| sys.sys_ram.read(0x0026)),
+            (1, |sys: &mut TestSystem| sys.sys_ram.read(0x0006)),
         ],
         // test indexed indirect addressing
         &[
-            (1, |sys: &TestSystem| sys.sys_ram.read(0x0213)),
-            (1, |sys: &TestSystem| sys.sys_ram.read(0x1302)),
-            (1, |sys: &TestSystem| sys.sys_ram.read(0x0302)),
+            (1, |sys: &mut TestSystem| sys.sys_ram.read(0x0213)),
+            (1, |sys: &mut TestSystem| sys.sys_ram.read(0x1302)),
+            (1, |sys: &mut TestSystem| sys.sys_ram.read(0x0302)),
         ],
         // test indirect indexed addressing
         &[
-            (1, |sys: &TestSystem| sys.sys_ram.read(0x0215)),
-            (1, |sys: &TestSystem| sys.sys_ram.read(0x1304)),
+            (1, |sys: &mut TestSystem| sys.sys_ram.read(0x0215)),
+            (1, |sys: &mut TestSystem| sys.sys_ram.read(0x1304)),
         ],
         // X REGISTER TESTS
         // test zero-page addressing
         &[
-            (2, |sys: &TestSystem| sys.sys_ram.read(0x10)),
-            (2, |sys: &TestSystem| sys.sys_ram.read(0x90)),
-            (2, |sys: &TestSystem| sys.sys_ram.read(0xFF)),
+            (2, |sys: &mut TestSystem| sys.sys_ram.read(0x10)),
+            (2, |sys: &mut TestSystem| sys.sys_ram.read(0x90)),
+            (2, |sys: &mut TestSystem| sys.sys_ram.read(0xFF)),
         ],
         // test zero-page (y-indexed) addressing
         &[
-            (2, |sys: &TestSystem| sys.sys_ram.read(0x14)),
-            (2, |sys: &TestSystem| sys.sys_ram.read(0x94)),
-            (2, |sys: &TestSystem| sys.sys_ram.read(0x03)),
-            (2, |sys: &TestSystem| sys.sys_ram.read(0xA0)),
-            (2, |sys: &TestSystem| sys.sys_ram.read(0x00)),
-            (2, |sys: &TestSystem| sys.sys_ram.read(0x20)),
+            (2, |sys: &mut TestSystem| sys.sys_ram.read(0x14)),
+            (2, |sys: &mut TestSystem| sys.sys_ram.read(0x94)),
+            (2, |sys: &mut TestSystem| sys.sys_ram.read(0x03)),
+            (2, |sys: &mut TestSystem| sys.sys_ram.read(0xA0)),
+            (2, |sys: &mut TestSystem| sys.sys_ram.read(0x00)),
+            (2, |sys: &mut TestSystem| sys.sys_ram.read(0x20)),
         ],
         // Y REGISTER TESTS
         // test zero-page addressing
         &[
-            (4, |sys: &TestSystem| sys.sys_ram.read(0x10)),
-            (4, |sys: &TestSystem| sys.sys_ram.read(0x90)),
-            (4, |sys: &TestSystem| sys.sys_ram.read(0xFF)),
+            (4, |sys: &mut TestSystem| sys.sys_ram.read(0x10)),
+            (4, |sys: &mut TestSystem| sys.sys_ram.read(0x90)),
+            (4, |sys: &mut TestSystem| sys.sys_ram.read(0xFF)),
         ],
         // transfer tests
         &[
-            (0x42, |sys: &TestSystem| sys.sys_ram.read(0x08)),
-            (0x52, |sys: &TestSystem| sys.sys_ram.read(0x09)),
+            (0x42, |sys: &mut TestSystem| sys.sys_ram.read(0x08)),
+            (0x52, |sys: &mut TestSystem| sys.sys_ram.read(0x09)),
         ],
     ]);
 }
@@ -767,46 +767,46 @@ fn test_subtraction() -> () {
     let mut sys = TestSystem::new("./res/tests/subtraction.bin");
     sys.run_tests(&[
         &[
-            (0x10, |sys: &TestSystem| sys.cpu.regs.acc),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Overflow) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0x10, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Overflow) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (0x0F, |sys: &TestSystem| sys.cpu.regs.acc),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Overflow) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0x0F, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Overflow) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (0x00, |sys: &TestSystem| sys.cpu.regs.acc),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Overflow) as u8),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0x00, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Overflow) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (0xF0, |sys: &TestSystem| sys.cpu.regs.acc),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Overflow) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0xF0, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Overflow) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (0xA0, |sys: &TestSystem| sys.cpu.regs.acc),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Overflow) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0xA0, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Overflow) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
         &[
-            (0x60, |sys: &TestSystem| sys.cpu.regs.acc),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
-            (1, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Overflow) as u8),
-            (0, |sys: &TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
+            (0x60, |sys: &mut TestSystem| sys.cpu.regs.acc),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Carry) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Negative) as u8),
+            (1, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Overflow) as u8),
+            (0, |sys: &mut TestSystem| sys.cpu.regs.status.get_bit(cpu::StatusBit::Zero) as u8),
         ],
     ]);
 }
